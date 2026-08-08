@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jp-Next Admin | Quản lý nội dung</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container nav-content">
+            <div class="logo">JwT <span class="badge">Admin</span></div>
+            <div id="loading-spinner" class="spinner hidden"></div>
+            <div>
+                <a href="index.html" style="color: white; text-decoration: none;"><i class="fas fa-eye"></i> Xem Site</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="card">
+            <h3><i class="fas fa-edit"></i> Quản lý bài học</h3>
+            <div class="admin-controls">
+                <div class="input-group">
+                    <label>Loại nội dung</label>
+                    <select id="data-type">
+                        <option value="vocab">Từ vựng (Vocab)</option>
+                        <option value="kanji">Hán tự (Kanji)</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Cấp độ (Level)</label>
+                    <select id="level">
+                        <option value="N5">N5</option>
+                        <option value="N4">N4</option>
+                        <option value="N3">N3</option>
+                        <option value="N2">N2</option>
+                        <option value="N1">N1</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Bài học (Lesson)</label>
+                    <select id="lesson-select">
+                        <option value="new">-- Tạo bài mới --</option>
+                    </select>
+                </div>
+                <div class="input-group">
+                    <label>Tên bài (Ví dụ: Bài 1: Chào hỏi)</label>
+                    <input type="text" id="lesson-title" placeholder="Nhập tiêu đề bài học...">
+                </div>
+                <input type="hidden" id="lesson-id-hidden">
+
+            </div>
+
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="excel-mode"><i class="fas fa-table"></i> Nhập kiểu Excel</button>
+                <button class="tab-btn" data-tab="csv-mode"><i class="fas fa-file-csv"></i> Nhập CSV/Text</button>
+                <button class="tab-btn" data-tab="json-mode"><i class="fas fa-code"></i> Nhập JSON</button>
+            </div>
+
+            <!-- Mode 1: Excel Like Table -->
+            <div id="excel-mode" class="tab-content">
+                <div class="table-container card" style="padding:0; margin-bottom: 10px;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th width="25%">Hán tự (Kanji)</th>
+                                <th width="25%">Hiragana</th>
+                                <th width="20%">Hán Việt</th>
+                                <th width="20%">Nghĩa (Mean)</th>
+                                <th width="10%"></th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="excel-body">
+                            <!-- Rows will be added here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Mode 2: CSV/Text -->
+            <div id="csv-mode" class="tab-content hidden">
+                <p style="font-size: 0.85rem; color: #666;">Định dạng: <strong>Kanji | Hiragana | Hán Việt | Nghĩa</strong> (Mỗi từ 1 dòng)</p>
+                <textarea id="csv-input" rows="12" placeholder="私 | わたし | TƯ | Tôi&#10;学生 | がくせい | HỌC SINH | Học sinh"></textarea>
+            </div>
+
+            <!-- Mode 3: JSON -->
+            <div id="json-mode" class="tab-content hidden">
+                <p style="font-size: 0.85rem; color: #666;">Định dạng: Chuỗi JSON Mảng các đối tượng chứa: <strong>kanji, hira, cnvi, mean</strong></p>
+                <textarea id="json-input" rows="12" placeholder='[\n  { "kanji": "私", "hira": "わたし", "cnvi": "TƯ", "mean": "Tôi" },\n  { "kanji": "学生", "hira": "がくせい", "cnvi": "HỌC SINH", "mean": "Học sinh" }\n]'></textarea>
+            </div>
+
+
+            <div class="actions">
+                <button id="btn-delete-lesson" class="btn-danger-admin"><i class="fas fa-trash-alt"></i> XÓA BÀI HỌC</button>
+                <button id="btn-save" class="btn-primary"><i class="fas fa-save"></i> LƯU VÀO FIREBASE</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal Cảnh Báo Thay Đổi Chưa Lưu -->
+    <div id="unsaved-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <h4><i class="fas fa-exclamation-triangle" style="color: #f39c12;"></i> Thay đổi chưa được lưu</h4>
+            <p>Bạn có thay đổi chưa lưu ở bài học hiện tại. Bạn muốn làm gì?</p>
+            <div class="modal-actions">
+                <button id="btn-modal-discard" class="btn-secondary" style="background: #95a5a6; color: white; border: none;">Hủy thay đổi</button>
+                <button id="btn-modal-save" class="btn-primary" style="background: #27ae60;">Lưu thay đổi</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script type="module" src="js/admin.js"></script>
+</body>
+</html>

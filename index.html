@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jp-Next: Học Tiếng Nhật</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container nav-content">
+            <div class="logo">JwT <span class="badge">Next</span></div>
+            <div id="loading-spinner" class="spinner hidden"></div>
+            <div class="nav-right">
+                <div class="menu-dropdown">
+                    <button class="menu-btn" id="menu-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="dropdown-content hidden" id="main-menu">
+                        <a href="#" id="btn-select-level"><i class="fas fa-graduation-cap"></i> Chọn cấp độ</a>
+                        <a href="admin.html"><i class="fas fa-cog"></i> Quản lý (Admin)</a>
+                        <a href="#" id="btn-stats"><i class="fas fa-chart-line"></i> Thống kê</a>
+                        <a href="#" id="btn-settings"><i class="fas fa-user-edit"></i> Cài đặt cá nhân</a>
+                        <hr>
+                        <a href="#" class="text-danger"><i class="fas fa-sign-out-alt"></i> Đăng xuất</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+
+    <main class="container">
+        <!-- Dashboard / Level Selector -->
+        <section id="dashboard" class="view">
+            <div class="card">
+                <div class="type-selector">
+                    <button class="btn-type active" data-type="vocab"><i class="fas fa-book"></i> Từ vựng</button>
+                    <button class="btn-type" data-type="kanji"><i class="fas fa-torii-gate"></i> Hán tự</button>
+                </div>
+                <hr>
+                <h3><i class="fas fa-graduation-cap"></i> Chọn cấp độ</h3>
+
+                <div class="levels-grid">
+                    <button class="btn-level" data-level="N5">N5</button>
+                    <button class="btn-level" data-level="N4">N4</button>
+                    <button class="btn-level" data-level="N3">N3</button>
+                    <button class="btn-level" data-level="N2">N2</button>
+                    <button class="btn-level" data-level="N1">N1</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Lesson List -->
+        <section id="lesson-view" class="view hidden">
+            <div class="header-action">
+                <button class="btn-back"><i class="fas fa-chevron-left"></i> Quay lại</button>
+                <h2 id="current-level-title">N5 Lessons</h2>
+                <button id="btn-spaced-review" class="btn-primary" style="margin-left: auto; padding: 8px 15px; font-size: 0.9rem; background: #8e44ad;"><i class="fas fa-history"></i> Ôn tập ngắt quãng</button>
+            </div>
+            <div id="lesson-list" class="grid-list">
+                <!-- Lessons injected here -->
+            </div>
+        </section>
+
+        <!-- Word List / Learning -->
+        <section id="learning-view" class="view hidden">
+            <div class="header-action">
+                <button class="btn-back"><i class="fas fa-chevron-left"></i> Quay lại</button>
+                <h2 id="current-lesson-title">Chi tiết bài học</h2>
+                
+                <div class="learning-controls">
+                    <select id="mode-select">
+                        <option value="list">View List</option>
+                        <option value="flashcard">FlashCard</option>
+                        <option value="quiz">Quiz</option>
+                    </select>
+                    <button id="btn-shuffle" class="btn-icon" title="Trộn từ"><i class="fas fa-random"></i></button>
+                    <button id="btn-filter-hard" class="btn-icon" title="Chỉ hiển thị từ khó"><i class="far fa-star"></i></button>
+                </div>
+            </div>
+
+            <!-- List Mode -->
+            <div id="list-mode" class="card table-container mode-container">
+                <table id="word-table">
+                    <thead>
+                        <tr>
+                            <th id="th-col-1">Từ vựng</th>
+                            <th id="th-col-2">
+                                Cách đọc 
+                                <button class="btn-toggle-col" data-col="reading"><i class="fas fa-eye"></i></button>
+                            </th>
+                            <th id="th-col-3">
+                                Nghĩa
+                                <button class="btn-toggle-col" data-col="meaning"><i class="fas fa-eye"></i></button>
+                            </th>
+                            <th style="width: 50px; text-align: center;">⭐</th>
+                        </tr>
+                    </thead>
+                    <tbody id="word-list-body">
+                        <!-- Words injected here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Flashcard Mode -->
+            <div id="flashcard-mode" class="mode-container hidden">
+                <div class="flashcard-wrapper">
+                    <div id="flashcard" class="flashcard">
+                        <div class="flashcard-inner">
+                            <div class="flashcard-front" id="fc-front"></div>
+                            <div class="flashcard-back" id="fc-back"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flashcard-controls" id="fc-standard-controls">
+                    <button id="btn-fc-prev" class="btn-fc"><i class="fas fa-chevron-left"></i></button>
+                    <span id="fc-counter">1 / 10</span>
+                    <button id="btn-fc-next" class="btn-fc"><i class="fas fa-chevron-right"></i></button>
+                </div>
+                
+                <!-- SM-2 Grading Controls (Only for Spaced Review) -->
+                <div class="flashcard-controls hidden" id="fc-sm2-controls" style="flex-wrap: wrap;">
+                    <div style="width: 100%; text-align: center; margin-bottom: 5px; color: #666;"><span id="fc-sm2-counter">1 / 25</span></div>
+                    <button class="btn-grade" data-grade="1" style="background:#e74c3c;">Lại</button>
+                    <button class="btn-grade" data-grade="3" style="background:#e67e22;">Khó</button>
+                    <button class="btn-grade" data-grade="4" style="background:#27ae60;">Tốt</button>
+                    <button class="btn-grade" data-grade="5" style="background:#2980b9;">Dễ</button>
+                </div>
+
+                <div style="text-align: center; margin-top: 15px;" id="fc-star-container">
+                    <button id="fc-star-btn" class="btn-icon" style="margin: 0 auto; border:none; background:none; font-size: 1.5rem;"><i class="fas fa-star star-btn"></i></button>
+                </div>
+            </div>
+
+            <!-- Quiz Mode -->
+            <div id="quiz-mode" class="mode-container hidden card">
+                <div class="quiz-header">
+                    <span id="quiz-counter">Câu: 1 / 10</span>
+                    <button id="quiz-star-btn" class="btn-icon" style="border:none; background:none; font-size: 1.2rem; height:auto; width:auto;"><i class="fas fa-star star-btn"></i></button>
+                    <span id="quiz-score" style="color: var(--success); font-weight: bold;">Điểm: 0</span>
+                </div>
+                <div class="quiz-question" id="quiz-question"></div>
+                <div class="quiz-options" id="quiz-options">
+                    <!-- Options injected here -->
+                </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button id="btn-quiz-next" class="btn-primary hidden" style="padding: 10px 20px;">Câu tiếp theo <i class="fas fa-arrow-right"></i></button>
+                </div>
+            </div>
+            
+            <!-- Global Save Button for all modes -->
+            <div id="global-save-container" style="text-align: center; margin-top: 30px; margin-bottom: 20px;">
+                <button id="btn-save-progress" class="btn-primary" style="padding: 12px 25px; font-size: 1.1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                    <i class="fas fa-save"></i> Lưu Từ Khó & Cập Nhật Ngày Học
+                </button>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Firebase SDK Modular -->
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
