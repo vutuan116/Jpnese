@@ -489,7 +489,7 @@ tr {
     gap: 10px;
     pointer-events: auto;
     backdrop-filter: blur(4px);
-    animation: toastIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, toastOut 0.3s ease 2.7s forwards;
+    animation: toastIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards, toastOut 0.3s ease 4.7s forwards;
 }
 
 .toast.success {

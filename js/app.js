@@ -26,7 +26,7 @@ function showToast(message, type = 'info') {
 
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    
+
     let icon = 'fa-info-circle';
     if (type === 'success') icon = 'fa-check-circle';
     if (type === 'error') icon = 'fa-exclamation-circle';
@@ -91,7 +91,7 @@ function switchView(viewName) {
     });
     views[viewName].classList.remove('hidden');
     state.currentView = viewName;
-    window.scrollTo(0,0);
+    window.scrollTo(0, 0);
 }
 
 // 5. Logic xử lý dữ liệu
@@ -126,7 +126,7 @@ function calculateSM2(quality, prevSm2) {
 async function fetchSpacedReviewWords(level) {
     const type = state.currentType;
     showSpinner(true);
-    
+
     try {
         const dbRef = ref(db);
         const lessonsSnapshot = await get(child(dbRef, `tuannv_new/metadata/${type}/${level}/lessons`));
@@ -138,7 +138,7 @@ async function fetchSpacedReviewWords(level) {
 
         const lessons = lessonsSnapshot.val();
         let learnedLessonIds = Object.keys(lessons).filter(id => lessons[id].lastLearned);
-        
+
         if (learnedLessonIds.length === 0) {
             showToast("Bạn chưa học bài nào, hãy hoàn thành ít nhất 1 bài trước nhé!", "info");
             showSpinner(false);
@@ -158,7 +158,7 @@ async function fetchSpacedReviewWords(level) {
         }
 
         const now = new Date().getTime();
-        
+
         // 1. Lọc ra những từ đến hạn ôn tập (nextReviewDate <= now)
         let dueWords = allLearnedWords.filter(w => w.sm2.nextReviewDate <= now);
 
@@ -180,17 +180,17 @@ async function fetchSpacedReviewWords(level) {
 
         state.currentLesson = "review";
         document.getElementById('current-lesson-title').innerText = "Ôn tập SM-2";
-        
+
         state.learningParams.words = reviewWords;
         state.learningParams.isHardFiltered = false;
         document.getElementById('btn-filter-hard').classList.add('hidden'); // Ẩn lọc sao
-        document.getElementById('mode-select').value = 'flashcard'; 
+        document.getElementById('mode-select').value = 'flashcard';
         document.getElementById('mode-select').disabled = true; // Chỉ cho phép flashcard
-        
+
         state.learningParams.mode = 'flashcard';
         state.learningParams.hiddenCols = { reading: false, meaning: false };
         state.learningParams.pendingSM2Updates = {}; // Reset pending updates
-        
+
         document.getElementById('global-save-container').style.display = 'none';
 
         updateLearningView();
@@ -211,25 +211,23 @@ async function fetchLessons(level) {
 
     // Kiểm tra nếu đã có trong Cache
     if (state.cache.lessons[cacheKey]) {
-        console.log(`[Cache Hit] Lấy danh sách bài học từ bộ nhớ tạm: ${cacheKey}`);
         renderLessons(level, state.cache.lessons[cacheKey]);
         switchView('lesson');
         return;
     }
 
     showSpinner(true);
-    console.log(`🔥 [Firebase Request] GET -> tuannv_new/metadata/${type}/${level}/lessons`);
     try {
         const dbRef = ref(db);
         const snapshot = await get(child(dbRef, `tuannv_new/metadata/${type}/${level}/lessons`));
-        
+
         // Xử lý sự kiện nút "Ôn tập ngắt quãng"
         const btnSpacedReview = document.getElementById('btn-spaced-review');
         if (btnSpacedReview) {
             // Clone nút để xóa các event listener cũ tránh gọi nhiều lần
             const newBtn = btnSpacedReview.cloneNode(true);
             btnSpacedReview.parentNode.replaceChild(newBtn, btnSpacedReview);
-            
+
             newBtn.addEventListener('click', () => {
                 fetchSpacedReviewWords(level);
             });
@@ -237,15 +235,18 @@ async function fetchLessons(level) {
 
         if (snapshot.exists()) {
             const data = snapshot.val();
-            state.cache.lessons[cacheKey] = data; // Lưu vào Cache
+            state.cache.lessons[cacheKey] = data;
             renderLessons(level, data);
             switchView('lesson');
         } else {
             showToast(`Không tìm thấy bài học ${type.toUpperCase()} cho trình độ ${level}.`, 'error');
+            return false;
         }
+        return true;
     } catch (error) {
         console.error(error);
         showToast("Lỗi khi tải dữ liệu!", 'error');
+        return false;
     } finally {
         showSpinner(false);
     }
@@ -265,19 +266,17 @@ async function fetchWords(level, lessonId) {
 
     // Kiểm tra nếu đã có trong Cache
     if (state.cache.words[cacheKey]) {
-        console.log(`[Cache Hit] Lấy từ vựng từ bộ nhớ tạm: ${cacheKey}`);
         renderWords(lessonId, state.cache.words[cacheKey], isFirstTime);
         switchView('learning');
         return;
     }
 
     showSpinner(true);
-    console.log(`🔥 [Firebase Request] GET -> tuannv_new/content/${type}/${level}/${lessonId}`);
     try {
         const dbRef = ref(db);
         const snapshot = await get(child(dbRef, `tuannv_new/content/${type}/${level}/${lessonId}`));
-        
-                if (snapshot.exists()) {
+
+        if (snapshot.exists()) {
             const data = snapshot.val();
             state.cache.words[cacheKey] = data; // Lưu vào Cache
             renderWords(lessonId, data, isFirstTime);
@@ -296,14 +295,15 @@ async function fetchWords(level, lessonId) {
 function renderLessons(level, lessons) {
     const container = document.getElementById('lesson-list');
     const title = document.getElementById('current-level-title');
-    
-    title.innerText = `Trình độ ${level.toUpperCase()}`;
+
+    // Tên Level ở góc trái
+    title.innerText = `Cấp độ ${level.toUpperCase()}`;
     container.innerHTML = '';
     state.currentLevel = level;
 
     Object.keys(lessons).forEach(id => {
         const lesson = lessons[id];
-        
+
         let learnedHTML = '';
         if (lesson.lastLearned) {
             learnedHTML = `<small style="color:#666;">${lesson.lastLearned}</small>`;
@@ -339,7 +339,7 @@ function processRawWordsToArray(wordsObj, isFirstTime) {
     return Object.keys(wordsObj).map(id => {
         let isHard = wordsObj[id].isHard;
         if (isFirstTime) isHard = true; // Nếu chưa học lần nào, mặc định coi tất cả là từ khó
-        
+
         // Cấu trúc mặc định của SM-2
         const sm2Data = wordsObj[id].sm2 || {
             interval: 0,
@@ -363,7 +363,7 @@ function updateLearningView() {
     document.getElementById(`${mode}-mode`).classList.remove('hidden');
 
     let displayWords = [...state.learningParams.words];
-    
+
     if (state.learningParams.isHardFiltered) {
         displayWords = displayWords.filter(w => w.isHard);
         if (displayWords.length === 0) {
@@ -381,7 +381,7 @@ function updateLearningView() {
     // Xử lý giao diện SM-2 khi ở chế độ Review
     const sm2Controls = document.getElementById('fc-sm2-controls');
     const stdControls = document.getElementById('fc-standard-controls');
-    
+
     if (state.currentLesson === 'review') {
         sm2Controls.classList.remove('hidden');
         stdControls.classList.add('hidden');
@@ -405,29 +405,29 @@ function renderWords(lessonId, rawWords, isFirstTime) {
     document.getElementById('mode-select').value = 'list';
     state.learningParams.mode = 'list';
     state.learningParams.hiddenCols = { reading: false, meaning: false };
-    
+
     updateLearningView();
 }
 
 function renderListMode(wordsArray) {
     const tbody = document.getElementById('word-list-body');
     const title = document.getElementById('current-lesson-title');
-    
+
     const th1 = document.getElementById('th-col-1');
     const th2 = document.getElementById('th-col-2');
     if (state.currentType === 'vocab') {
-        if(th1) th1.innerText = 'Từ vựng';
-        if(th2) th2.childNodes[0].nodeValue = 'Cách đọc ';
+        if (th1) th1.innerText = 'Từ vựng';
+        if (th2) th2.childNodes[0].nodeValue = 'Cách đọc ';
     } else {
-        if(th1) th1.innerText = 'Hán tự';
-        if(th2) th2.childNodes[0].nodeValue = 'Âm On/Kun ';
+        if (th1) th1.innerText = 'Hán tự';
+        if (th2) th2.childNodes[0].nodeValue = 'Âm On/Kun ';
     }
 
     title.innerText = `Chi tiết bài học`;
     tbody.innerHTML = '';
 
     wordsArray.forEach((word, index) => {
-        
+
         let displayWord = word.kanji ? word.kanji.trim() : '';
         let displayReading = word.hira ? word.hira.trim() : '';
 
@@ -437,14 +437,14 @@ function renderListMode(wordsArray) {
         }
 
         const tr = document.createElement('tr');
-        
+
         const tdWord = document.createElement('td');
         tdWord.className = 'word-cell';
         tdWord.innerHTML = `
             <strong style="color: var(--accent); font-size: 1.1rem;">${displayWord}</strong>
             <button class="btn-copy" title="Sao chép"><i class="far fa-copy"></i></button>
         `;
-        
+
         const copyBtn = tdWord.querySelector('.btn-copy');
         copyBtn.onclick = (e) => {
             e.stopPropagation();
@@ -490,7 +490,7 @@ function renderListMode(wordsArray) {
             }
             // Update in array
             const targetWord = state.learningParams.words.find(w => w.id === word.id);
-            if(targetWord) targetWord.isHard = !targetWord.isHard;
+            if (targetWord) targetWord.isHard = !targetWord.isHard;
             // Update UI
             tdStar.querySelector('i').classList.toggle('hard');
         };
@@ -506,11 +506,11 @@ function renderListMode(wordsArray) {
 
 function renderFlashcardMode(wordsArray) {
     if (wordsArray.length === 0) return;
-    
+
     state.learningParams.fcIndex = 0;
     const fcCard = document.getElementById('flashcard');
     fcCard.classList.remove('is-flipped');
-    
+
     updateFlashcardUI(wordsArray);
 
     document.getElementById('btn-fc-prev').onclick = () => {
@@ -563,7 +563,7 @@ function renderQuizMode(wordsArray) {
     if (wordsArray.length === 0) return;
     state.learningParams.quizIndex = 0;
     state.learningParams.quizScore = 0;
-    
+
     // Tạo mảng câu hỏi trộn lên
     state.learningParams.quizQuestions = [...wordsArray].sort(() => 0.5 - Math.random());
     updateQuizUI();
@@ -572,7 +572,7 @@ function renderQuizMode(wordsArray) {
 function updateQuizUI() {
     const questions = state.learningParams.quizQuestions;
     const index = state.learningParams.quizIndex;
-    
+
     if (index >= questions.length) {
         document.getElementById('quiz-question').innerHTML = `Hoàn thành! Bạn đúng ${state.learningParams.quizScore} / ${questions.length}`;
         document.getElementById('quiz-options').innerHTML = '';
@@ -602,12 +602,12 @@ function updateQuizUI() {
     // Lấy 3 đáp án sai ngẫu nhiên
     let otherOptions = state.learningParams.words.filter(w => w.id !== currentQ.id);
     otherOptions = otherOptions.sort(() => 0.5 - Math.random()).slice(0, 3);
-    
+
     let allOptions = [currentQ, ...otherOptions].sort(() => 0.5 - Math.random());
-    
+
     const optionsContainer = document.getElementById('quiz-options');
     optionsContainer.innerHTML = '';
-    
+
     let answered = false;
     const btnNext = document.getElementById('btn-quiz-next');
     btnNext.classList.add('hidden');
@@ -617,7 +617,7 @@ function updateQuizUI() {
         div.className = 'quiz-option';
         div.innerText = opt.mean; // Đố nghĩa
         div.onclick = () => {
-            if(answered) return;
+            if (answered) return;
             answered = true;
             if (opt.id === currentQ.id) {
                 div.classList.add('correct');
@@ -678,7 +678,7 @@ document.querySelectorAll('.btn-grade').forEach(btn => {
     btn.onclick = async (e) => {
         const quality = parseInt(e.target.getAttribute('data-grade'));
         const word = state.learningParams.words[state.learningParams.fcIndex];
-        
+
         // Tính toán SM2 mới
         const newSm2 = calculateSM2(quality, word.sm2);
         word.sm2 = newSm2;
@@ -686,7 +686,7 @@ document.querySelectorAll('.btn-grade').forEach(btn => {
         // Gom dữ liệu cập nhật vào pending object (không lưu lên FB ngay)
         const lessonId = word.lessonId;
         const wordId = word.id;
-        
+
         if (!state.learningParams.pendingSM2Updates[lessonId]) {
             state.learningParams.pendingSM2Updates[lessonId] = {};
         }
@@ -705,7 +705,7 @@ document.querySelectorAll('.btn-grade').forEach(btn => {
                 const type = state.currentType;
                 const level = state.currentLevel;
                 const updates = {};
-                
+
                 // Gom tất cả các lesson bị thay đổi thành 1 cục batch update
                 for (const lId in state.learningParams.pendingSM2Updates) {
                     const wordUpdates = state.learningParams.pendingSM2Updates[lId];
@@ -716,9 +716,8 @@ document.querySelectorAll('.btn-grade').forEach(btn => {
                     delete state.cache.words[`${type}_${level}_${lId}`];
                 }
 
-                console.log(`🔥 [Firebase Request] UPDATE BATCH -> ${Object.keys(updates).length} từ vựng.`);
                 await update(ref(db), updates);
-                
+
                 showToast("Chúc mừng! Bạn đã hoàn thành phiên ôn tập.", "success");
                 setTimeout(() => {
                     switchView('lesson');
@@ -737,22 +736,22 @@ document.getElementById('btn-save-progress').onclick = async () => {
     const type = state.currentType;
     const level = state.currentLevel;
     const lessonId = state.currentLesson;
-    
+
     // Convert array back to object structure for Firebase
     const wordsObj = {};
     let hardCount = 0;
     state.learningParams.words.forEach(w => {
-        wordsObj[w.id] = { kanji: w.kanji||'', hira: w.hira||'', cnvi: w.cnvi||'', mean: w.mean||'', isHard: w.isHard||false };
+        wordsObj[w.id] = { kanji: w.kanji || '', hira: w.hira || '', cnvi: w.cnvi || '', mean: w.mean || '', isHard: w.isHard || false };
         if (w.isHard) hardCount++;
     });
 
     const now = new Date();
-    const dateStr = `${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()}`;
+    const dateStr = `${now.getDate()}/${now.getMonth() + 1}/${now.getFullYear()}`;
 
     showSpinner(true);
     try {
         await set(ref(db, `tuannv_new/content/${type}/${level}/${lessonId}`), wordsObj);
-        
+
         // Cập nhật metadata (ngày học + số từ khó)
         await set(child(ref(db), `tuannv_new/metadata/${type}/${level}/lessons/${lessonId}/hardCount`), hardCount);
         await set(child(ref(db), `tuannv_new/metadata/${type}/${level}/lessons/${lessonId}/lastLearned`), dateStr);
@@ -760,7 +759,7 @@ document.getElementById('btn-save-progress').onclick = async () => {
         // Xóa cache
         delete state.cache.words[`${type}_${level}_${lessonId}`];
         delete state.cache.lessons[`${type}_${level}`];
-        
+
         showToast("Đã lưu tiến độ học thành công!", 'success');
         switchView('lesson'); // Quay về màn hình danh sách bài học
         fetchLessons(level); // Tải lại danh sách để cập nhật ngày học & số từ khó mới
@@ -773,17 +772,36 @@ document.getElementById('btn-save-progress').onclick = async () => {
 };
 
 document.querySelectorAll('.btn-type').forEach(btn => {
-    btn.addEventListener('click', () => {
+    btn.addEventListener('click', async () => {
         document.querySelectorAll('.btn-type').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         state.currentType = btn.getAttribute('data-type');
+
+        // Khi đổi Tab Từ vựng <-> Kanji, tự động tải lại danh sách bài học của Level hiện tại
+        if (state.currentLevel) {
+            let isFetchSuccess = await fetchLessons(state.currentLevel);
+            if (!isFetchSuccess && state.currentType != 'vocab') {
+                resetButtonDataTypeToVocal();
+            }
+        }
     });
 });
+
+function resetButtonDataTypeToVocal() {
+    document.querySelectorAll('.btn-type').forEach(b => b.classList.remove('active'));
+    document.querySelector('.btn-type[data-type="vocab"]').classList.add('active');
+    state.currentType = 'vocab';
+}
 
 document.querySelectorAll('.btn-level').forEach(btn => {
     btn.addEventListener('click', () => {
         const level = btn.getAttribute('data-level');
         localStorage.setItem('jp_last_level', level); // Lưu level vào localStorage
+        state.currentLevel = level;
+
+        // Reset lại Tab về Từ vựng mỗi khi đổi Level mới
+        resetButtonDataTypeToVocal();
+
         fetchLessons(level);
     });
 });
@@ -807,5 +825,3 @@ const savedLevel = localStorage.getItem('jp_last_level');
 if (savedLevel) {
     fetchLessons(savedLevel);
 }
-
-console.log("Jp-Next initialized!");

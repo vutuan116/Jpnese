@@ -72,13 +72,11 @@ async function loadExistingLessons() {
 
     // Check Cache
     if (adminCache.lessons[cacheKey]) {
-        console.log(`⚡ [Admin Cache Hit] Danh sách bài học: ${cacheKey}`);
         populateLessonSelect(adminCache.lessons[cacheKey]);
         return;
     }
 
     showSpinner(true);
-    console.log(`🔥 [Firebase Request] GET -> tuannv_new/metadata/${type}/${level}/lessons`);
     try {
         const snapshot = await get(ref(db, `tuannv_new/metadata/${type}/${level}/lessons`));
         if (snapshot.exists()) {
@@ -253,7 +251,6 @@ lessonSelect.onchange = async (e) => {
 
     // Check Cache
     if (adminCache.words[cacheKey]) {
-        console.log(`⚡ [Admin Cache Hit] Từ vựng bài học: ${cacheKey}`);
         populateFormWithData(nextVal, adminCache.words[cacheKey]);
         resetFormDirty();
         checkFormState();
@@ -262,7 +259,6 @@ lessonSelect.onchange = async (e) => {
 
     // Load dữ liệu bài cũ
     showSpinner(true);
-    console.log(`🔥 [Firebase Request] GET -> tuannv_new/content/${type}/${level}/${nextVal}`);
     try {
         const snapshot = await get(ref(db, `tuannv_new/content/${type}/${level}/${nextVal}`));
         if (snapshot.exists()) {
@@ -507,8 +503,6 @@ async function handleSaveAction(overrideType = null, overrideLevel = null) {
     }
 
     showSpinner(true);
-    console.log(`🔥 [Firebase Request] SET -> tuannv_new/content/${type}/${level}/${lessonId}`);
-    console.log(`🔥 [Firebase Request] SET -> tuannv_new/metadata/${type}/${level}/lessons/${lessonId}`);
     try {
         await set(ref(db, `tuannv_new/content/${type}/${level}/${lessonId}`), dataToSave);
         await set(ref(db, `tuannv_new/metadata/${type}/${level}/lessons/${lessonId}`), {
@@ -563,8 +557,6 @@ deleteBtn.onclick = async () => {
 
     if (confirm(`Bạn có chắc chắn muốn XÓA vĩnh viễn bài học "${lessonTitle}" trên Firebase không?`)) {
         showSpinner(true);
-        console.log(`🔥 [Firebase Request] REMOVE -> tuannv_new/content/${type}/${level}/${lessonId}`);
-        console.log(`🔥 [Firebase Request] REMOVE -> tuannv_new/metadata/${type}/${level}/lessons/${lessonId}`);
         try {
             await remove(ref(db, `tuannv_new/content/${type}/${level}/${lessonId}`));
             await remove(ref(db, `tuannv_new/metadata/${type}/${level}/lessons/${lessonId}`));
